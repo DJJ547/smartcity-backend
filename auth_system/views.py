@@ -16,9 +16,9 @@ def login(request):
         return Response({
             'message': res['message'],
             'email': res['user'].email,
-            'firstname': res['user'].firstname,
-            'lastname': res['user'].lastname,
-            'is_agent':res['user'].is_agent,
+            'firstname': res['user'].first_name,
+            'lastname': res['user'].last_name,
+            'is_agent':res['user'].is_staff,
             'token': res['token']
         }, status=status.HTTP_200_OK)
     else:
