@@ -4,6 +4,7 @@
 /__pycache__
 # Byte-compiled / optimized / DLL files
 __pycache__/
+migration/
 *.py[cod]
 *$py.class
 
