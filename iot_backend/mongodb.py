@@ -101,7 +101,7 @@ class MongoDBProcessor:
         for station in all_station_data:
             if station['id'] in all_id_list:
                 data_time = pytz.utc.localize(datetime.strptime(station['speed_flow_every_5min'][index]['timestamp'], "%m/%d/%Y %H:%M:%S").replace(month=pytz.utc.localize(datetime.now()).month, day=pytz.utc.localize(datetime.now()).day))
-                new_row = Station_Speed(station_id=station['id'], speed=station['speed_flow_every_5min'][index]['speed'], timestamp=data_time)
+                new_row = Station_Speed(station_id=station['id'], speed=station['speed_flow_every_5min'][index]['speed'], flow=station['speed_flow_every_5min'][index]['flow'], timestamp=data_time)
                 new_row.save()
         return 'speed updated'
     
