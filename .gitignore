@@ -1,5 +1,10 @@
 /venv
+.venv
+/Scripts
+/Lib
 .env
+*.cfg
+/migration
 /migrations
 /__pycache__
 # Byte-compiled / optimized / DLL files
