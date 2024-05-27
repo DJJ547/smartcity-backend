@@ -1,6 +1,5 @@
 from .models import Camera, Iot, Drone, Incident, Congestion
 from datetime import datetime, timedelta
-import jwt
 
 class MysqlProcessor:
     def __init__(self):

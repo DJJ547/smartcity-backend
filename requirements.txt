@@ -6,3 +6,8 @@ python-dotenv
 django-cors-headers
 djangorestframework-simplejwt
 pymongo
+celery
+django-celery-beat 
+django-celery-results
+redis
+django-redis

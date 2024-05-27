@@ -1,5 +1,6 @@
-from .models import User
+from django.contrib.auth.models import User
 from datetime import datetime, timedelta
+import pytz
 import jwt
 
 class MysqlProcessor:
@@ -9,6 +10,9 @@ class MysqlProcessor:
     def authenticate_user(self, email, password):
         if User.objects.filter(email=email, password=password).exists():
             user = User.objects.get(email=email, password=password)
+            user.is_active = 1
+            user.last_login = pytz.utc.localize(datetime.now())
+            user.save()
             # generate JWT token
             payload = {
                 'email': user.email,
@@ -24,6 +28,6 @@ class MysqlProcessor:
         if user.exists():
             return {'result': False, 'message':'registration failed, email already exist'}
         else:
-            new_user = User(email=email, firstname=firstname, lastname=lastname, password=password)
+            new_user = User(email=email, first_name=firstname, last_name=lastname, password=password, is_superuser=0, username='/', is_staff=0, is_active=0, date_joined=pytz.utc.localize(datetime.now()))
             new_user.save()
             return {'result': True, 'message':'registration succeed'}
