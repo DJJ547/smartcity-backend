@@ -17,5 +17,9 @@ app.conf.beat_schedule = {
         'task': 'iot_backend.tasks.get_speed_every_5min',
         'schedule': crontab(minute='*/5'),
     },
+    'run-every-1-hour': {
+        'task': 'data_backend.tasks.get_speed_every_1hour',
+        'schedule': crontab(minute=0, hour='*/1'),
+    },
 }
 

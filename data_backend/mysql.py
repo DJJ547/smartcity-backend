@@ -1,5 +1,8 @@
 from .models import Camera, Iot, Drone, Incident, Congestion
 from datetime import datetime, timedelta
+import os
+import pytz
+from django.conf import settings
 
 class MysqlProcessor:
     def __init__(self):
@@ -51,25 +54,22 @@ class MysqlProcessor:
             device_info["all"][str(drone.dist_id)].append(data)
             device_info["all"]["0"].append(data)
         return device_info
-
-    # def update_new_incidents(self, current_time):
-    #     entry_found = False
-    #     with open(os.path.join(settings.STATIC_DIRS[0], 'all_text_chp_incident_day_2024_04_30.txt'), 'r') as file:
-    #         for line in file:
-    #             data = line.strip().split(',')
-    #             parsed_datetime = datetime.strptime(data[3], "%m/%d/%Y %H:%M:%S")
-    #             if current_time.hour == parsed_datetime.hour and current_time.minute == parsed_datetime.minute:
-    #                 if Incident.objects.filter(id=data[0]).exists():
-    #                     return False
-    #                 else:
-    #                     incident_mysql = Incident(id=data[0], timestamp=timezone.make_aware(current_time, timezone.get_current_timezone()), latitude=data[9], longitude=data[10],
-    #                                               district=data[11], description=data[4], location=data[5], area=data[6])
-    #                     incident_mysql.save()
-    #                     entry_found = True
-    #     if entry_found:
-    #         return True
-    #     else:
-    #         return False
+    
+    def update_all_chp_incidents_in_1hour(self, time):
+        if not isinstance(time, datetime):
+            time = pytz.utc.localize(datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))
+        with open(os.path.join(settings.STATIC_DIRS[0], 'all_chp_incident_day_2024_05_23.txt'), 'r') as file:
+            for line in file:
+                data = line.strip().split(',')
+                parsed_datetime = datetime.strptime(data[3], "%m/%d/%Y %H:%M:%S")
+                if time.hour == parsed_datetime.hour:
+                    if Incident.objects.filter(timestamp=parsed_datetime, source='iot', source_id=data[0]).exists():
+                        return False
+                    else:
+                        incident_mysql = Incident(timestamp=pytz.utc.localize(parsed_datetime.replace(month=time.month, day=time.day)), source='chp', source_id=data[0])
+                        incident_mysql.save()
+                        return True
+        return False
 
     # def get_all_incidents(self):
     #     incidents = Incident.objects.all().order_by('id')

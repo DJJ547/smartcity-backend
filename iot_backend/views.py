@@ -13,9 +13,9 @@ def get_all_data(request):
     return Response({'devices': devices}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-def update_all_speed(request):
+def test_update_all_speed(request):
     data = json.loads(request.body)
     time = data.get('time')
     mongodb = MongoDBProcessor()
-    all_speed = mongodb.update_all_speed_in_5min(time)
-    return Response({'speed': all_speed}, status=status.HTTP_200_OK)
+    mongodb.update_all_flow_speed_congestion_in_5min(time)
+    return Response({'message': 'succeed'}, status=status.HTTP_200_OK)

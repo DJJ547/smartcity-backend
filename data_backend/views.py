@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
 from .mysql import MysqlProcessor
+import json
     
 @api_view(['GET'])
 def get_all_data(request):
@@ -11,6 +11,13 @@ def get_all_data(request):
     # incidents = mysql.get_all_incidents()
     return Response({'devices': devices}, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def test_update_all_incidents(request):
+    data = json.loads(request.body)
+    time = data.get('time')
+    mysql = MysqlProcessor()
+    mysql.update_all_chp_incidents_in_1hour(time)
+    return Response({'message': 'succeed'}, status=status.HTTP_200_OK)
 
 # @api_view(['POST'])
 # def update_incidents(request):
