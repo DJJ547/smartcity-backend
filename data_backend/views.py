@@ -17,7 +17,7 @@ def get_all_incidents_data(request):
     current_time = pytz.utc.localize(datetime.now().replace(microsecond=0))
     mysql = MysqlProcessor()
     incidents = mysql.get_all_incidents(current_time)
-    return Response({'incidents': incidents}, status=status.HTTP_200_OK)
+    return Response({'active': incidents["active"], 'all': incidents["all"]}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_all_congestions_data(request):

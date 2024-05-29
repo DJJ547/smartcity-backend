@@ -19,7 +19,6 @@ migrations/
 *.pyc
 db.sqlite3
 /media/
-/static/
 
 # Ignore the virtual environment directory
 venv/
