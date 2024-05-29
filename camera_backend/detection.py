@@ -1,7 +1,9 @@
 from ultralytics import YOLO
+from django.conf import settings
+import os
 
-model = YOLO('./models/best.pt')
-model2 = YOLO('./models/Emr&Incident_Model_V11_best.pt')
+model = YOLO(os.path.join(settings.STATIC_DIRS[0], 'best.pt'))
+model2 = YOLO(os.path.join(settings.STATIC_DIRS[0], 'Emr&Incident_Model_V11_best.pt'))
 
 def detect(img, incident=False):
     if incident:
