@@ -1,4 +1,4 @@
-from ..data_backend.models import Camera, Incident
+from data_backend.models import Camera, Incident
 from django.utils import timezone
 from decimal import Decimal
 
