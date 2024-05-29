@@ -8,7 +8,7 @@ class MongoDBProcessor:
     def __init__(self):
         #mongoDB connection
         self.client = MongoClient(os.getenv('mongodb_uri'))
-        self.db = self.client['smartcity']
+        self.db = self.client[os.getenv('mongodb_name')]
         self.camera_collection = self.db['Camera']
 
     # get device info   

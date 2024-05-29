@@ -6,7 +6,7 @@ from django.http import StreamingHttpResponse
 from .mongodb import MongoDBProcessor
 from .mysql import MysqlProcessor
 import json
-from .detection import detect
+from smartcity_backend.detection import detect
 import cv2
 import numpy as np
 from queue import Queue
