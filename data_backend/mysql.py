@@ -61,27 +61,31 @@ class MysqlProcessor:
         if not isinstance(time, datetime):
             time = pytz.utc.localize(
                 datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))
+        active_incidents = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
+        ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
         all_incidents = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
         ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
         incidents = Incident.objects.all().order_by('timestamp')
         for incident in incidents:
+            data = {
+                'id': incident.id,
+                'timestamp': incident.timestamp,
+                'source': incident.source,
+                'source_id': incident.source_id,
+                'description': incident.description,
+                'location': incident.location,
+                'area': incident.area,
+                'latitude': incident.latitude,
+                'longitude': incident.longitude,
+                'district': incident.district
+            }
+            all_incidents[str(incident.district)].append(data)
+            all_incidents["0"].append(data)
             if timedelta(0) <= time - incident.timestamp <= timedelta(hours=1):
-                data = {
-                    'id': incident.id,
-                    'timestamp': incident.timestamp,
-                    'source': incident.source,
-                    'source_id': incident.source_id,
-                    'description': incident.description,
-                    'location': incident.location,
-                    'area': incident.area,
-                    'latitude': incident.latitude,
-                    'longitude': incident.longitude,
-                    'district': incident.district
-                }
-                all_incidents[str(incident.district)].append(data)
-                all_incidents["0"].append(data)
-        return all_incidents
-    
+                active_incidents[str(incident.district)].append(data)
+                active_incidents["0"].append(data)
+        return {"all": all_incidents, "active": active_incidents}
+
     def get_all_congestions(self, time):
         if not isinstance(time, datetime):
             time = pytz.utc.localize(
@@ -104,7 +108,7 @@ class MysqlProcessor:
                 all_congestions["0"].append(data)
         return all_congestions
 
-    def update_all_chp_incidents_in_1minute(self, time):
+    def update_all_chp_incidents_in_1min(self, time):
         if not isinstance(time, datetime):
             time = pytz.utc.localize(
                 datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))

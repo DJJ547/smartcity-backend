@@ -101,7 +101,7 @@ class MongoDBProcessor:
         all_station_data = self.iot_collection.find({})
         for station in all_station_data:
             if station['id'] in all_id_list:
-                data_time = pytz.utc.localize(datetime.strptime(station['speed_flow_every_5min'][index]['timestamp'], "%m/%d/%Y %H:%M:%S").replace(month=pytz.utc.localize(datetime.now()).month, day=pytz.utc.localize(datetime.now()).day))
+                data_time = pytz.utc.localize(datetime.strptime(station['speed_flow_every_5min'][index]['timestamp'], "%m/%d/%Y %H:%M:%S").replace(datetime.now().month, day=datetime.now().day))
                 if Station_Speed.objects.filter(timestamp=data_time, station_id=station['id']).exists():
                     return
                 new_station_speed = Station_Speed(station_id=station['id'], speed=station['speed_flow_every_5min'][index]['speed'], flow=station['speed_flow_every_5min'][index]['flow'], timestamp=data_time)

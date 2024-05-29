@@ -10,6 +10,6 @@ def update_incident_every_1min():
     current_time = pytz.utc.localize(datetime.now())
     print(current_time)
     mysql = MysqlProcessor()
-    mysql.update_all_chp_incidents_in_1minute(current_time)
+    mysql.update_all_chp_incidents_in_1min(current_time)
     print("This task runs every one minute!")
     

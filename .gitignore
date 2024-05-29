@@ -18,7 +18,6 @@ migrations/
 *.pot
 *.pyc
 db.sqlite3
-/media/
 
 # Ignore the virtual environment directory
 venv/

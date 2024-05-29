@@ -10,6 +10,7 @@ class Camera(models.Model):
     address = models.CharField(max_length=100)
     district = models.IntegerField()
     enabled = models.SmallIntegerField()
+    video_url = models.CharField(max_length=500)
 
     class Meta:
         db_table = 'cameras'

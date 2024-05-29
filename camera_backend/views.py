@@ -10,6 +10,8 @@ from .detection import detect
 import cv2
 import numpy as np
 from queue import Queue
+import pytz
+from datetime import datetime
 
 streaming = True
 
@@ -64,9 +66,10 @@ def searchedDevice(request):
 
 @api_view(['GET'])
 def GetAllIncidences(request):
+    current_time = pytz.utc.localize(datetime.now().replace(microsecond=0))
     # get all incidents
     db = MysqlProcessor()
-    incidents = db.get_all_incidents()
+    incidents = db.get_all_incidents(current_time)
     return Response(incidents, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
