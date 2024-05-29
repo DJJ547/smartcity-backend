@@ -1,4 +1,4 @@
-from .models import Camera, Iot, Drone, Incident, Congestion
+from .models import Device, Iot, Drone, Incident, Congestion
 from datetime import datetime, timedelta
 
 class MysqlProcessor:
@@ -6,7 +6,7 @@ class MysqlProcessor:
         pass
 
     def get_all_devices(self):
-        cameras = Camera.objects.all().order_by('district')
+        cameras = Device.objects.all().order_by('district')
         device_info = {"all": {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
         ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}}
         for camera in cameras:
