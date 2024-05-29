@@ -40,9 +40,16 @@ class Drone(models.Model):
         db_table = 'drones'
 
 class Incident(models.Model):
+    id = models.IntegerField(primary_key=True, null=False)
     timestamp = models.DateTimeField(null=False)
     source = models.CharField(max_length=45, null=False)
     source_id = models.IntegerField(null=False)
+    description = models.CharField(max_length=500)
+    location = models.CharField(max_length=100)
+    area = models.CharField(max_length=100)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    district = models.IntegerField(null=False)
     
     class Meta:
         db_table = 'incidents'
@@ -50,9 +57,13 @@ class Incident(models.Model):
         
 
 class Congestion(models.Model):
+    id = models.IntegerField(primary_key=True, null=False)
     timestamp = models.DateTimeField(null=False)
     source = models.CharField(max_length=45, null=False)
     source_id = models.IntegerField(null=False)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    district = models.IntegerField(null=False)
     
     class Meta:
         db_table = 'congestions'
