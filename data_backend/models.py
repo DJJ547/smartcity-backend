@@ -33,7 +33,7 @@ class Drone(models.Model):
     id = models.IntegerField(primary_key=True, null=False)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
-    altitude = models.IntegerField(null=False)
+    altitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     dist_id = models.CharField(max_length=12)
     timestamp = models.DateTimeField()
     video_url = models.CharField(max_length=500)
