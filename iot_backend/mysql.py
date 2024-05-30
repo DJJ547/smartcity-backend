@@ -80,20 +80,20 @@ class MysqlProcessor:
     
     def get_all_devices(self):
         devices = Iot.objects.all().order_by('district')
-        all_devices = {"all": {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
+        all_devices = {"iots": {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
         ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}}
         for device in devices:
             data = {
                 'id': device.station_id,
                 'latitude': device.latitude,
                 'longitude': device.longitude,
-                'address': device.address,
-                'district': device.district,
-                'enabled': device.enabled,
-                'hourlySpeed': json.loads(device.hourlySpeed),
+                'address': device.freeway + " " + device.direction + "," + device.city + "," + device.county,
+                'dist_id': device.district,
+                'status': 'active' if device.enabled else 'inactive',
+                'type': 'iot'
             }
-            all_devices["all"][str(device.district)].append(data)
-            all_devices["all"]["0"].append(data)
+            all_devices["iots"][str(device.district)].append(data)
+            all_devices["iots"]["0"].append(data)
         return all_devices
 
     # Search by station_id or address or district
@@ -111,5 +111,3 @@ class MysqlProcessor:
                 'hourlySpeed': json.loads(device.hourlySpeed),
             })
         return device_info
-
-

@@ -7,4 +7,5 @@ urlpatterns = [
     path('getAllIncidents/', views.get_all_devices_data),
     path('updateAllSpeedCongestion/', views.test_update_all_flow_speed_congestions),
     path('updateAllSpeedCongestionToNow/', views.test_update_all_flow_speed_congestions_to_now),
+    path('testAddIotGivenId/', views.test_add_iot_given_ids),
 ]

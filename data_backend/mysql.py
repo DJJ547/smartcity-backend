@@ -35,7 +35,7 @@ class MysqlProcessor:
                 'id': iot.station_id,
                 'latitude': iot.latitude,
                 'longitude': iot.longitude,
-                'address': iot.address,
+                'address': iot.freeway + " " + iot.direction + "," + iot.city + "," + iot.county,
                 'dist_id': iot.district,
                 'status': 'active' if iot.enabled else 'inactive',
                 'type': 'iot'
@@ -50,7 +50,7 @@ class MysqlProcessor:
                 'latitude': drone.latitude,
                 'longitude': drone.longitude,
                 'dist_id': drone.dist_id,
-                'status': drone.status,
+                'status': 'active' if drone.enabled else 'inactive',
                 'type': 'drone'
             }
             all_devices["all"][str(drone.dist_id)].append(data)

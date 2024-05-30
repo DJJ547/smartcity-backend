@@ -29,3 +29,10 @@ def test_update_all_flow_speed_congestions_to_now(request):
     mongodb.update_all_flow_speed_congestions_from_0am_to_now(time)
     return Response({'message': 'succeed'}, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def test_add_iot_given_ids(request):
+    data = json.loads(request.body)
+    station_ids = data.get('station_ids')
+    mongodb = MongoDBProcessor()
+    mongodb.test_add_iots_give_list(station_ids)
+    return Response({'message': 'succeed'}, status=status.HTTP_200_OK)

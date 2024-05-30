@@ -19,23 +19,27 @@ class MongoDBProcessor:
         
     # get device info
     def get_iot_info(self, station_id):
-        iot_info = self.iot_collection.find_one({'station_id': int(station_id)})
+        iot = self.iot_collection.find_one({'station_id': int(station_id)})
 
         # return iot_info
-        station_id = iot_info['station_id']
-        address = str(iot_info['Fwy']) + ' ' + str(iot_info['Dir'])
-        latitude = iot_info['location'][0]
-        longitude = iot_info['location'][1]
-        district = iot_info['District']
-        hourlySpeed = self.get_hourly_speed(station_id)
+        station_id = iot['station_id']
+        freeway = str(iot['freeway'])
+        direction = iot['direction']
+        city = iot['city']
+        county = iot['county']
+        latitude = iot['latitude']
+        longitude = iot['longitude']
+        district = iot['district']
 
         return {
             'station_id': station_id,
-            'address': address,
-            'district': district,
+            'freeway': freeway,
+            'direction': direction,
+            'city': city,
+            'county': county,
             'latitude': latitude,
             'longitude': longitude,
-            'hourlySpeed': hourlySpeed
+            'district': district,
         }
 
     # Search by station_id or freeway or district
@@ -52,44 +56,28 @@ class MongoDBProcessor:
             query['$or'].extend([{'station_id': search_int}, {'Fwy': search_int}])
         query['$or'].append({'District': search})
 
-        iot_info = self.iot_collection.find(query).limit(100)
+        iots = self.iot_collection.find(query).limit(100)
         iot_data = []
-        for iot in iot_info:
+        for iot in iots:
             station_id = iot['station_id']
-            address = str(iot['Fwy']) + ' ' + str(iot['Dir'])
-            latitude = iot['location'][0]
-            longitude = iot['location'][1]
-            district = iot['District']
+            freeway = str(iot['freeway'])
+            direction = iot['direction']
+            city = iot['city']
+            county = iot['county']
+            latitude = iot['latitude']
+            longitude = iot['longitude']
+            district = iot['district']
             iot_data.append({
-                'id': station_id,
-                'address': address,
-                'district': district,
+                'station_id': station_id,
+                'freeway': freeway,
+                'direction': direction,
+                'city': city,
+                'county': county,
                 'latitude': latitude,
-                'longitude': longitude
+                'longitude': longitude,
+                'district': district,
             })
         return iot_data
-    
-    def get_hourly_speed(self, station_id):
-        # Fetch data from MongoDB
-        station_data = self.iot_collection.find_one({"station_id": station_id})
-
-        # Process timeseries data
-        timeseries = station_data['timeseries']
-        hourly_speeds = []
-
-        # Group data by hour and calculate average speed
-        for i in range(24):
-            hour_data = [entry['Speed'] for entry in timeseries[i*12:(i+1)*12]]
-            if hour_data and not any(x is None for x in hour_data):  # Ensure there is data to average
-                average_speed = mean(hour_data)
-                # Round the average speed to two decimal places
-                rounded_average = round(average_speed, 2)
-                hourly_speeds.append(rounded_average)
-            else:
-                # Append a default value or handle missing data as needed
-                hourly_speeds.append(0.00)  # Example default value
-
-        return hourly_speeds
     
     def update_all_flow_speed_congestion_in_5min(self, time):
         if not isinstance(time, datetime):
@@ -139,3 +127,13 @@ class MongoDBProcessor:
                         new_congestion = Congestion(timestamp=parsed_time, source='iot', source_id=station['id'], latitude=station['latitude'], longitude=station['longitude'], district=station['district'])
                         new_congestion.save()
         return
+    
+    def test_add_iots_give_list(self, iot_id_list):
+        for iot_id in iot_id_list:
+            if Iot.objects.filter(station_id=iot_id).exists():
+                return
+            iot_info = self.iot_collection.find_one({'id': iot_id})
+            iot = Iot(station_id=iot_info['id'], freeway=iot_info['freeway'] if str(iot_info['freeway']) else '', direction=iot_info['direction'] if iot_info['direction'] else '', city=iot_info['city'] if iot_info['city'] else '', county=iot_info['county'] if iot_info['county'] else '', latitude=iot_info['latitude'], longitude=iot_info['longitude'], district=iot_info['district'], enabled=1)
+            iot.save()
+        return
+    
