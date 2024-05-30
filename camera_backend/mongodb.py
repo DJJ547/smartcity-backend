@@ -1,13 +1,15 @@
 from pymongo import MongoClient
 from django.utils import timezone
 from dotenv import load_dotenv
+from urllib.parse import quote_plus
 import os
 load_dotenv()
-
+mongodbpassword = quote_plus(os.getenv('mongodbpassword'))
+mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:27017/"
 class MongoDBProcessor:
     def __init__(self):
         #mongoDB connection
-        self.client = MongoClient(os.getenv('mongodb_uri'))
+        self.client = MongoClient(mongodb_uri)
         self.db = self.client[os.getenv('mongodb_name')]
         self.camera_collection = self.db['Camera']
 
