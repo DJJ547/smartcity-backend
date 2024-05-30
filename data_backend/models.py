@@ -2,8 +2,8 @@ from django.db import models
      
 class Camera(models.Model):
     id = models.IntegerField(unique=True, null=False, primary_key=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     index = models.IntegerField(unique=True, null=False)
     time = models.DateTimeField()
     image_url = models.CharField(max_length=100)
@@ -17,11 +17,13 @@ class Camera(models.Model):
         
 class Iot(models.Model):
     station_id = models.IntegerField(primary_key=True, null=False)
-    latitude = models.FloatField(null=False)
-    longitude = models.FloatField(null=False)
-    address = models.CharField(max_length=48)
+    freeway = models.CharField(max_length=45)
+    direction = models.CharField(max_length=45)
+    city = models.CharField(max_length=45)
+    county = models.CharField(max_length=45)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     district = models.IntegerField(null=False)
-    hourlySpeed = models.CharField(max_length=512)
     enabled = models.SmallIntegerField()
 
     class Meta:
@@ -29,13 +31,13 @@ class Iot(models.Model):
         
 class Drone(models.Model):
     id = models.IntegerField(primary_key=True, null=False)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    altitude = models.IntegerField()
-    status = models.CharField(max_length=45)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
+    altitude = models.IntegerField(null=False)
     dist_id = models.CharField(max_length=12)
     timestamp = models.DateTimeField()
     video_url = models.CharField(max_length=500)
+    enabled = models.SmallIntegerField(null=False)
 
     class Meta:
         db_table = 'drones'

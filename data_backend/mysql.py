@@ -35,7 +35,7 @@ class MysqlProcessor:
                 'id': iot.station_id,
                 'latitude': iot.latitude,
                 'longitude': iot.longitude,
-                'address': iot.address,
+                'address': iot.freeway + " " + iot.direction + "," + iot.city + "," + iot.county,
                 'dist_id': iot.district,
                 'status': 'active' if iot.enabled else 'inactive',
                 'type': 'iot'
@@ -50,7 +50,7 @@ class MysqlProcessor:
                 'latitude': drone.latitude,
                 'longitude': drone.longitude,
                 'dist_id': drone.dist_id,
-                'status': drone.status,
+                'status': 'active' if drone.enabled else 'inactive',
                 'type': 'drone'
             }
             all_devices["all"][str(drone.dist_id)].append(data)
@@ -90,23 +90,27 @@ class MysqlProcessor:
         if not isinstance(time, datetime):
             time = pytz.utc.localize(
                 datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))
+        active_congestions = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
+        ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
         all_congestions = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
         ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
-        congestions = Incident.objects.all().order_by('timestamp')
+        congestions = Congestion.objects.all().order_by('timestamp')
         for congestion in congestions:
+            data = {
+                'id': congestion.id,
+                'timestamp': congestion.timestamp,
+                'source': congestion.source,
+                'source_id': congestion.source_id,
+                'latitude': congestion.latitude,
+                'longitude': congestion.longitude,
+                'district': congestion.district
+            }
+            all_congestions[str(congestion.district)].append(data)
+            all_congestions["0"].append(data)
             if timedelta(0) <= time - congestion.timestamp < timedelta(minutes=5):
-                data = {
-                    'id': congestion.id,
-                    'timestamp': congestion.timestamp,
-                    'source': congestion.source,
-                    'source_id': congestion.source_id,
-                    'latitude': congestion.latitude,
-                    'longitude': congestion.longitude,
-                    'district': congestion.district
-                }
-                all_congestions[str(congestion.district)].append(data)
-                all_congestions["0"].append(data)
-        return all_congestions
+                active_congestions[str(congestion.district)].append(data)
+                active_congestions["0"].append(data)
+        return {"all": all_congestions, "active": active_congestions}
 
     def update_all_chp_incidents_in_1min(self, time):
         if not isinstance(time, datetime):
