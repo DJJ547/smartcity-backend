@@ -34,5 +34,5 @@ def test_add_iot_given_ids(request):
     data = json.loads(request.body)
     station_ids = data.get('station_ids')
     mongodb = MongoDBProcessor()
-    mongodb.test_add_iots_give_list(station_ids)
+    mongodb.test_add_iots_given_list(station_ids)
     return Response({'message': 'succeed'}, status=status.HTTP_200_OK)
