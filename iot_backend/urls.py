@@ -3,8 +3,14 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
+    path('addDevice/', views.add_device),
+    path('deleteDevice/', views.delete_device),
+    path('searchedDevice/', views.get_searched_devices),
+    
     path('getAllDevices/', views.get_all_devices_data),
-    path('getAllIncidents/', views.get_all_devices_data),
+    path('getAllCongestions/' ,views.get_all_congestions_data),
+    path('getFlowSpeed/', views.get_flow_speed_for_one_device),
+    
     path('updateAllSpeedCongestion/', views.test_update_all_flow_speed_congestions),
     path('updateAllSpeedCongestionToNow/', views.test_update_all_flow_speed_congestions_to_now),
     path('testAddIotGivenId/', views.test_add_iot_given_ids),

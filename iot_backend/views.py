@@ -2,6 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import json
+from datetime import datetime
+import pytz
 
 from .mysql import MysqlProcessor
 from .mongodb import MongoDBProcessor
@@ -20,6 +22,66 @@ def test_update_all_flow_speed_congestions(request):
     mongodb.update_all_flow_speed_congestion_in_5min(time)
     return Response({'message': 'succeed'}, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def add_device(request):
+    data = json.loads(request.body)
+    id = data.get('id')
+    if not id:
+        return Response({"error": "Station ID is required"}, status=400)
+    # Add device info
+    mongodb = MongoDBProcessor()
+    mysql = MysqlProcessor()
+    deviceInfo = mongodb.get_iot_info(id)
+    if not deviceInfo:
+        return Response({"error": "Device not found"}, status=404)
+    # return Response(deviceInfo, status=200)
+    if mysql.add_device(deviceInfo):
+        return Response('Device added', status=status.HTTP_200_OK)
+    else:
+        return Response('Device already exists', status=status.HTTP_409_CONFLICT)
+    
+@api_view(['DELETE'])
+def delete_device(request):
+    data = json.loads(request.body)
+    id = data.get('id')
+    db = MysqlProcessor()
+    if db.delete_device(id):
+        return Response('Device deleted', status=status.HTTP_200_OK)
+    else:
+        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST', 'GET'])
+def disable_device(request):
+    data = json.loads(request.body)
+    id = data.get('id')
+    db = MysqlProcessor()
+    if db.disable_or_enable_device(id):
+        return Response('Status switched', status=status.HTTP_200_OK)
+    else:
+        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_searched_devices(request):
+    search_term = request.query_params.get('search')
+    mongodb = MongoDBProcessor()
+    devices = mongodb.search_iot_info(search_term)
+    return Response(devices, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_all_congestions_data(request):
+    current_time = pytz.utc.localize(datetime.now().replace(microsecond=0))
+    mysql = MysqlProcessor()
+    congestions = mysql.get_all_congestions(current_time)
+    return Response({'congestions': congestions}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def get_flow_speed_for_one_device(request):
+    data = json.loads(request.body)
+    station_id = data.get('id')
+    mysql = MysqlProcessor()
+    all_flow_speed = mysql.get_all_speed_flow_of_one_device(station_id)
+    return Response({'station_data': all_flow_speed}, status=status.HTTP_200_OK)
+    
 
 @api_view(['POST'])
 def test_update_all_flow_speed_congestions_to_now(request):

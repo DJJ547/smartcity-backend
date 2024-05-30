@@ -1,5 +1,9 @@
 import json
-from data_backend.models import Iot
+from data_backend.models import Iot, Congestion
+from .models import Station_Speed
+from datetime import datetime, timedelta
+import pytz
+
 
 class MysqlProcessor:
     def __init__(self):
@@ -31,7 +35,8 @@ class MysqlProcessor:
             device_mysql.time = device_info['time']
             device_mysql.save()
         else:
-            device_mysql = Iot(index=device_info['index'], latitude=device_info['latitude'], longitude=device_info['longitude'], image_url=device_info['image_url'], address=device_info['address'], time=device_info['time'], district=device_info['district'])
+            device_mysql = Iot(index=device_info['index'], latitude=device_info['latitude'], longitude=device_info['longitude'],
+                               image_url=device_info['image_url'], address=device_info['address'], time=device_info['time'], district=device_info['district'])
             device_mysql.save()
 
     def get_device_info(self, request_index):
@@ -50,7 +55,7 @@ class MysqlProcessor:
             return device_info
         else:
             return None
-        
+
     def delete_device(self, id):
         print(id)
         if Iot.objects.filter(station_id=id).exists():
@@ -59,7 +64,7 @@ class MysqlProcessor:
             return True
         else:
             return False
-    
+
     def updateImage(self, request_index, image_url):
         if Iot.objects.filter(index=request_index).exists():
             device_mysql = Iot.objects.get(index=request_index)
@@ -68,7 +73,7 @@ class MysqlProcessor:
             return True
         else:
             return False
-    
+
     def disable_or_enable_device(self, request_index):
         if Iot.objects.filter(station_id=request_index).exists():
             device_mysql = Iot.objects.get(station_id=request_index)
@@ -77,7 +82,7 @@ class MysqlProcessor:
             return True
         else:
             return False
-    
+
     def get_all_devices(self):
         devices = Iot.objects.all().order_by('district')
         all_devices = {"iots": {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
@@ -96,18 +101,43 @@ class MysqlProcessor:
             all_devices["iots"]["0"].append(data)
         return all_devices
 
-    # Search by station_id or address or district
-    def get_searched_devices(self, search):
-        devices = Iot.objects.filter(station_id=search) | Iot.objects.filter(address__icontains=search) | Iot.objects.filter(district=search)
-        device_info = []
-        for device in devices:
-            device_info.append({
-                'id': device.station_id,
-                'latitude': device.latitude,
-                'longitude': device.longitude,
-                'address': device.address,
-                'district': device.district,
-                'enabled': device.enabled,
-                'hourlySpeed': json.loads(device.hourlySpeed),
-            })
-        return device_info
+    def get_all_congestions(self, time):
+        if not isinstance(time, datetime):
+            time = pytz.utc.localize(
+                datetime.strptime(time, "%Y-%m-%d %H:%M:%S"))
+        active_congestions = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
+        ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
+        all_congestions = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [
+        ], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
+        congestions = Congestion.objects.all().order_by('timestamp')
+        for congestion in congestions:
+            data = {
+                'id': congestion.id,
+                'timestamp': congestion.timestamp,
+                'source': congestion.source,
+                'source_id': congestion.source_id,
+                'latitude': congestion.latitude,
+                'longitude': congestion.longitude,
+                'district': congestion.district
+            }
+            all_congestions[str(congestion.district)].append(data)
+            all_congestions["0"].append(data)
+            if timedelta(0) <= time - congestion.timestamp < timedelta(minutes=5):
+                active_congestions[str(congestion.district)].append(data)
+                active_congestions["0"].append(data)
+        return {"all": all_congestions, "active": active_congestions}
+
+    def get_all_speed_flow_of_one_device(self, id):
+        all_data = []
+        if Station_Speed.objects.filter(station_id=id).exists():
+            all_speed_flow = Station_Speed.objects.filter(station_id=id).order_by("timestamp")
+            for speed_flow in all_speed_flow:
+                data = {
+                    'id': speed_flow.id,
+                    'timestamp': speed_flow.timestamp,
+                    'speed': speed_flow.speed,
+                    'flow': speed_flow.flow,
+                    'station_id': speed_flow.station_id
+                }
+                all_data.append(data)
+        return all_data
