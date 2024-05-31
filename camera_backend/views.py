@@ -74,6 +74,7 @@ def GetAllIncidences(request):
 
 @api_view(['GET'])
 def streamVideo(request):
+    id = request.query_params.get('id')
     request_url = request.query_params.get('url')
     latitude = request.query_params.get('latitude')
     longitude = request.query_params.get('longitude')
@@ -107,7 +108,7 @@ def streamVideo(request):
                 # Add the incident to the database
                 if len(results_incident) > 0:
                     db = MysqlProcessor()
-                    if db.add_incidents(latitude, longitude, 'Camera', district) == False:
+                    if db.add_incidents(id, latitude, longitude, 'camera', district) == False:
                         print('Incident already exists')
                     else:
                         print('Incident added')

@@ -2,6 +2,7 @@ from data_backend.models import Camera, Incident
 from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime, timedelta
+import pytz
 
 
 class MysqlProcessor:
@@ -60,21 +61,21 @@ class MysqlProcessor:
         return device_info
 
     # add a new incident, if theres one already, update the timestamp instead
-    def add_incidents(self, lat, lon, Type, district):
+    def add_incidents(self, id, lat, lon, Type, district):
         # lat decimal with 5 decimal place
         lat = Decimal(lat).quantize(Decimal('1.00000'))
         # lon decimal with 5 decimal place
         lon = Decimal(lon).quantize(Decimal('1.00000'))
-
-        if Incident.objects.filter(latitude=lat, longitude=lon, district=district).exists():
+        time = pytz.utc.localize(datetime.now())
+        if Incident.objects.filter(latitude=lat, longitude=lon, source=Type, source_id=id, district=district).exists():
             incident = Incident.objects.get(
-                latitude=lat, longitude=lon, district=district)
-            incident.timestamp = timezone.now()
+                latitude=lat, longitude=lon, source=Type, source_id=id, district=district)
+            incident.timestamp = time
             incident.save()
             return False
         else:
-            incident = Incident(latitude=lat, longitude=lon,
-                                type=Type, district=district)
+            incident = Incident(timestamp=time, latitude=lat, longitude=lon,
+                                source=Type, source_id=id, district=district)
             incident.save()
         return True
 
