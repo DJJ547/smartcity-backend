@@ -107,7 +107,7 @@ def streamVideo(request):
                 # Add the incident to the database
                 if len(results_incident) > 0:
                     db = MysqlProcessor()
-                    if db.add_incidents(latitude, longitude, 'incident', district) == False:
+                    if db.add_incidents(latitude, longitude, 'Camera', district) == False:
                         print('Incident already exists')
                     else:
                         print('Incident added')

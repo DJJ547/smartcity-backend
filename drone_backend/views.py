@@ -1,191 +1,76 @@
-from queue import Queue
-import cv2
 from django.shortcuts import render, HttpResponse, redirect
-from django.http import HttpResponseNotAllowed, JsonResponse, StreamingHttpResponse
-
-from smartcity_backend.detection import detect
-from .mysql import MysqlProcessor
-from .mongodb import MongoDBProcessor
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
 from rest_framework.decorators import api_view
-
-from rest_framework import status
 from rest_framework.response import Response
-
-
-from data_backend.models import Drone, Incident
-
+from rest_framework import status
+from django.http import StreamingHttpResponse
+from .mongodb import MongoDBProcessor
+from .mysql import MysqlProcessor
 import json
+from smartcity_backend.detection import detect
+import cv2
+import numpy as np
+from queue import Queue
+import pytz
+from datetime import datetime
 
 streaming = True
 
-@csrf_exempt
+@api_view(['POST'])
 def addDevice(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        id = data.get('id')
-        latitude = data.get('latitude')
-        longitude = data.get('longitude')
-        altitude = data.get('altitude')
-        timestamp = data.get('timestamp')
-        dist_id = data.get('dist_id')
-        status = data.get('status')
-        if Drone.objects.filter(id=id).exists():
-            print("device already exists")
-            return HttpResponse(json.dumps('device address already exist'), status=409)
-        else:
-            new_device = Drone(id=id, latitude=latitude, longitude=longitude, altitude=altitude, timestamp=timestamp, dist_id=dist_id, status = status)
-            new_device.save()
-            print('device added')
-            return HttpResponse(json.dumps('device succeed'), status=200)
-    else:
-        return HttpResponseNotAllowed(['POST'])
-
-@csrf_exempt
-def UpdateDeviceInfo(request):
-        if request.method == 'PUT':
-            data = json.loads(request.body)
-            id = data.get('update_id')
-            latitude = data.get('update_latitude')
-            longitude = data.get('update_longitude')
-            altitude = data.get('update_altitude')
-            timestamp = data.get('update_timestamp')
-            dist_id = data.get('update_dist_id')
-            status = data.get('update_status')
-
-            try:
-                device = Drone.objects.get(id=id)
-                device.latitude = latitude
-                device.longitude = longitude
-                device.altitude = altitude
-                device.timestamp = timestamp
-                device.dist_id = dist_id
-                device.enabled = status
-                device.save()
-                print('Device updated successfully')
-                return HttpResponse(json.dumps('Device updated successfully'), status=200)
-            except Drone.DoesNotExist:
-                print("Device does not exist")
-                return HttpResponse(json.dumps('Device does not exist'), status=404)
-        else:
-            return HttpResponseNotAllowed(['PUT'])
-        
-@csrf_exempt
-def getDeviceInfo(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        id = data.get('id')
-        try:
-            device = Drone.objects.get(id=id)
-            device_data = {
-                'id': device.id,
-                'latitude': device.latitude,
-                'longitude': device.longitude,
-                'altitude': device.altitude,
-                'timestamp': device.timestamp,
-                'dist_id': device.dist_id,
-                'status': device.enabled
-            }
-            return JsonResponse(device_data)
-        except Drone.DoesNotExist:
-            return JsonResponse({'error': 'Device not found'}, status=404)
-            
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-@csrf_exempt
-def deleteDevice(request):
-    if request.method == 'DELETE':
-        data = json.loads(request.body)
-        id = data.get('id')
-        if id is None:
-            return HttpResponse('Drone ID not provided', status=400)
-
-        try:
-            device = Drone.objects.get(id=id)
-            device.delete()
-            print('device deleted')
-            return HttpResponse('Device deleted', status=200)
-        except Drone.DoesNotExist:
-            return HttpResponse('Device not found', status=404)
-    else:
-        return HttpResponseNotAllowed(['DELETE'])
-    
-@csrf_exempt 
-def get_video_urls(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        id = data.get('id')
-        print("Received id:", id)
-        mongodb = MongoDBProcessor()
-        try:
-            deviceInfo = mongodb.get_drone_info(id)
-            device_data = {
-                'id': id,
-                'videourl' : deviceInfo['video_url']
-            }
-            print(device_data)
-            return JsonResponse(device_data)
-        except Drone.DoesNotExist:
-            return JsonResponse({'error': 'video url not found'}, status=404)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-    
-
-@csrf_exempt 
-def getAllDevices(request):
-    if request.method == 'GET':
-        db = MysqlProcessor()
-        devices = db.get_all_devices()
-        #print("getAllDevices",devices)
-        return JsonResponse(devices, status=status.HTTP_200_OK)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
-    
-        
-def updateImage(request):
-    id = "1"
-    # update image url
+    request_id = int(request.query_params.get('id'))
+    # add device info
     mongodb = MongoDBProcessor()
-    image_url = mongodb.get_image_url(id)
-    db = MysqlProcessor()
-    if db.updateImage(id, image_url):
-        return HttpResponse('Image updated')
+    mysql = MysqlProcessor()
+    deviceInfo = mongodb.get_drone_info(request_id)
+    if mysql.add_device(deviceInfo):
+        return Response('Device added', status=status.HTTP_200_OK)
     else:
-        return HttpResponse('Device not found')
+        return Response('Device already exists', status=status.HTTP_409_CONFLICT)
 
+@api_view(['GET'])
+def GetALLDevices(request):
+    # get all devices info
+    db = MysqlProcessor()
+    devices = db.get_all_devices()
+    global streaming
+    streaming = True
+    return Response(devices, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+def deleteDevice(request):
+    request_id = request.query_params.get('id')
+    # delete device info
+    db = MysqlProcessor()
+    if db.delete_device(request_id):
+        return Response('Device deleted', status=status.HTTP_200_OK)
+    else:
+        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST', 'GET'])
 def disableDevice(request):
-    id = "1"
+    request_id = request.query_params.get('id')
     # disable device
     db = MysqlProcessor()
-    if db.disable_device(id):
-        return HttpResponse('Device disabled')
+    if db.disable_or_enable_device(request_id):
+        return Response('Status switched', status=status.HTTP_200_OK)
     else:
-        return HttpResponse('Device not found')
-
-# added from yifu's code all 3 functions
-    
-@csrf_exempt
+        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        
+@api_view(['GET'])
 def searchedDevice(request):
-    if request.method == 'GET':
-        search_term = request.query_params.get('search')
-        # search device
-        db = MongoDBProcessor()
-        result = db.search_device(search_term)
-        return JsonResponse(result, status=status.HTTP_200_OK)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    search_term = request.query_params.get('search')
+    # search device
+    db = MongoDBProcessor()
+    result = db.search_device(search_term)
+    return Response(result, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def GetAllIncidences(request):
+    current_time = pytz.utc.localize(datetime.now().replace(microsecond=0))
     # get all incidents
     db = MysqlProcessor()
-    incidents = db.get_all_incidents()
-    return Response(incidents, status=status.HTTP_200_OK)        
+    incidents = db.get_all_incidents(current_time)
+    return Response(incidents, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def streamVideo(request):
@@ -193,7 +78,7 @@ def streamVideo(request):
     print("Received id for stream video:", id)
     mongodb = MongoDBProcessor()
     deviceInfo = mongodb.get_drone_info(id)
-    device_data = {
+    """ device_data = {
         'id': id,
         'videourl' : deviceInfo['video_url'],
         'latitude' : deviceInfo['latitude'],
@@ -201,12 +86,12 @@ def streamVideo(request):
         'dist_id' : deviceInfo['dist_id']
     }
     print("stream video", device_data)
-    print(deviceInfo['video_url'])
+    print(deviceInfo['video_url']) """
     # get video stream
     # Open the video file
     BUFFER_SIZE = 30
     cap = cv2.VideoCapture(deviceInfo['video_url'])
-    print("streamvideo from cap cv2",cap)
+
     # The buffer for storing frames
     buffer = Queue(maxsize=BUFFER_SIZE)
     print(streaming)
@@ -231,7 +116,7 @@ def streamVideo(request):
                 # Add the incident to the database
                 if len(results_incident) > 0:
                     db = MysqlProcessor()
-                    if db.add_incidents(deviceInfo['latitude'], deviceInfo['longitude'], 'incident', deviceInfo['dist_id']) == False:
+                    if db.add_incidents(deviceInfo['latitude'], deviceInfo['longitude'], 'drone', deviceInfo['dist_id']) == False:
                         print('Incident already exists')
                     else:
                         print('Incident added')

@@ -33,8 +33,17 @@ class MongoDBProcessor:
     def search_device(self, search_term):
         result = []
         regex = {"$regex": f".*{search_term}.*"}
+        try:
+            search_term_int = int(search_term)
+            numeric_search = {"$eq": search_term_int}
+        except ValueError:
+            numeric_search = None
 
-        for camera in self.camera_collection.find({"$or": [{"index": regex}, {"nearbyPlace": regex}, {"locationName": regex}, {"district": regex}]}).limit(100):
+        search_conditions = [{"ID": numeric_search}, {"district": numeric_search}]
+        if numeric_search is not None:
+            search_conditions.extend([{"nearbyPlace": regex}, {"locationName": regex}])
+
+        for camera in self.camera_collection.find({"$or": search_conditions}).limit(100):
             data = {
                 'latitude': camera['latitude'],
                 'longitude': camera['longitude'],
