@@ -14,7 +14,9 @@ import pytz
 from datetime import datetime
 import logging
 
+cap = None
 streaming = True
+
 def draw_results(frame, results, color):
     for result in results:
         position = [int(p) for p in result['position']]
@@ -93,6 +95,8 @@ def streamVideo(request):
     # get video stream
     # Open the video file
     BUFFER_SIZE = 30
+    global streaming, cap
+    streaming = True
     cap = cv2.VideoCapture(deviceInfo['video_url'])
 
     # The buffer for storing frames
@@ -136,6 +140,8 @@ def streamVideo(request):
 
 @api_view(['GET'])
 def stopStream(request):
-    global streaming
-    streaming = False
+    global streaming, cap
+    streaming=False
+    if cap:
+        cap.release()
     return Response('Stream stopped', status=status.HTTP_200_OK)

@@ -141,7 +141,7 @@ def streamVideo(request):
 
     return StreamingHttpResponse(generate(), content_type='multipart/x-mixed-replace; boundary=frame')
 
-@ api_view(['GET'])
+@api_view(['GET'])
 def stopStream(request):
     global streaming, cap
     streaming=False

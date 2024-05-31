@@ -12,7 +12,6 @@ urlpatterns = [
     path('getAllCongestions/' ,views.get_all_congestions_data),
     path('getFlowSpeed/', views.get_flow_speed_for_one_device),
     
-    path('updateAllSpeedCongestion/', views.test_update_all_flow_speed_congestions),
+    path('updateAllSpeedCongestion/', views.update_all_flow_speed_congestions),
     path('updateAllSpeedCongestionToNow/', views.test_update_all_flow_speed_congestions_to_now),
-    path('testAddIotGivenId/', views.test_add_iot_given_ids),
 ]

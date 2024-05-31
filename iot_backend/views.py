@@ -17,7 +17,7 @@ def get_all_devices_data(request):
     return Response({'devices': devices}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-def test_update_all_flow_speed_congestions(request):
+def update_all_flow_speed_congestions(request):
     data = json.loads(request.body)
     time = data.get('time')
     mongodb = MongoDBProcessor()
@@ -93,12 +93,4 @@ def test_update_all_flow_speed_congestions_to_now(request):
     time = data.get('time')
     mongodb = MongoDBProcessor()
     mongodb.update_all_flow_speed_congestions_from_0am_to_now(time)
-    return Response({'message': 'succeed'}, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def test_add_iot_given_ids(request):
-    data = json.loads(request.body)
-    station_ids = data.get('station_ids')
-    mongodb = MongoDBProcessor()
-    mongodb.test_add_iots_given_list(station_ids)
     return Response({'message': 'succeed'}, status=status.HTTP_200_OK)
