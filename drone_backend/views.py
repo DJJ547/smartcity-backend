@@ -12,18 +12,26 @@ import numpy as np
 from queue import Queue
 import pytz
 from datetime import datetime
+import logging
 
 streaming = True
+def draw_results(frame, results, color):
+    for result in results:
+        position = [int(p) for p in result['position']]
+        cv2.rectangle(frame, (position[0], position[1]),
+                      (position[2], position[3]), color, 2)
+        cv2.putText(frame, result['label'], (position[0], position[1]),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 2, cv2.LINE_AA)
+db = MysqlProcessor()
 
 @api_view(['POST'])
 def addDevice(request):
     request_id = int(request.query_params.get('id'))
     # add device info
     mongodb = MongoDBProcessor()
-    mysql = MysqlProcessor()
     deviceInfo = mongodb.get_drone_info(request_id)
     print("hi", deviceInfo)
-    if mysql.add_device(deviceInfo):
+    if db.add_device(deviceInfo):
         return Response('Device added', status=status.HTTP_200_OK)
     else:
         return Response('Device already exists', status=status.HTTP_409_CONFLICT)
@@ -31,7 +39,6 @@ def addDevice(request):
 @api_view(['GET'])
 def GetALLDevices(request):
     # get all devices info
-    db = MysqlProcessor()
     devices = db.get_all_devices()
     global streaming
     streaming = True
@@ -40,8 +47,6 @@ def GetALLDevices(request):
 @api_view(['DELETE'])
 def deleteDevice(request):
     request_id = request.query_params.get('id')
-    # delete device info
-    db = MysqlProcessor()
     if db.delete_device(request_id):
         return Response('Device deleted', status=status.HTTP_200_OK)
     else:
@@ -50,8 +55,6 @@ def deleteDevice(request):
 @api_view(['POST', 'GET'])
 def disableDevice(request):
     request_id = request.query_params.get('id')
-    # disable device
-    db = MysqlProcessor()
     if db.disable_or_enable_device(request_id):
         return Response('Status switched', status=status.HTTP_200_OK)
     else:
@@ -61,15 +64,14 @@ def disableDevice(request):
 def searchedDevice(request):
     search_term = request.query_params.get('search')
     # search device
-    db = MongoDBProcessor()
-    result = db.search_device(search_term)
+    mongodb = MongoDBProcessor()
+    result = mongodb.search_device(search_term)
     return Response(result, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def GetAllIncidences(request):
     current_time = pytz.utc.localize(datetime.now().replace(microsecond=0))
     # get all incidents
-    db = MysqlProcessor()
     incidents = db.get_all_incidents(current_time)
     return Response(incidents, status=status.HTTP_200_OK)
 
@@ -100,23 +102,18 @@ def streamVideo(request):
         while streaming:
             ret, frame = cap.read()
             if ret:
-                # frame = cv2.resize(frame, (640, 360))
-                results = detect(frame, incident=False)
-                results_incident = detect(frame, incident=True)
-                # Draw rectangle
-                for result in results:
-                    position = [int(p) for p in result['position']]
-                    cv2.rectangle(frame, (position[0], position[1]), (position[2], position[3]), (0, 255, 0), 2)
-                    cv2.putText(frame, result['label'], (position[0], position[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 2, cv2.LINE_AA)
+                try:
+                    results = detect(frame, incident=False)
+                    results_incident = detect(frame, incident=True)
+                except Exception as e:
+                    logging.error(f"Detection failed: {e}")
+                    return
                 
-                for result in results_incident:
-                    position = [int(p) for p in result['position']]
-                    cv2.rectangle(frame, (position[0], position[1]), (position[2], position[3]), (0, 0, 255), 2)
-                    cv2.putText(frame, result['label'], (position[0], position[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 2, cv2.LINE_AA)
+                draw_results(frame, results, (0, 255, 0))
+                draw_results(frame, results_incident, (0, 0, 255))
 
                 # Add the incident to the database
                 if len(results_incident) > 0:
-                    db = MysqlProcessor()
                     if db.add_incidents(deviceInfo['latitude'], deviceInfo['longitude'], 'drone', deviceInfo['dist_id']) == False:
                         print('Incident already exists')
                     else:
