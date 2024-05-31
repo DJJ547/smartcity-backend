@@ -37,35 +37,32 @@ class MongoDBProcessor:
         }
 
     # Search by station_id or freeway or district
-    def search_iot_info(self, search):
-        if search.strip() == '':
-            return []
+    def search_iot_info(self, search_term):
+        result = []
         try:
-            search_int = int(search)
+            search_term_int = int(search_term)
+            numeric_search = {"$eq": search_term_int}
         except ValueError:
-            search_int = None
+            numeric_search = None
 
-        query = {'$or': []}
-        if search_int is not None:
-            query['$or'].extend([{'id': search_int}, {'freeway': search_int}])
-        query['$or'].append({'district': search})
+        search_conditions = [{"id": numeric_search}, {"district": numeric_search}, {"freeway": numeric_search}]
 
-        iot_info = self.iot_collection.find(query).limit(100)
-        iot_data = []
+        iot_info = self.iot_collection.find({"$or": search_conditions}).limit(100)
+ 
         for iot in iot_info:
             station_id = iot['id']
             address = str(iot['freeway']) + ' ' + str(iot['direction'])
             latitude = iot['latitude']
             longitude = iot['longitude']
             district = iot['district']
-            iot_data.append({
+            result.append({
                 'id': station_id,
                 'address': address,
                 'dist_id': district,
                 'latitude': latitude,
                 'longitude': longitude
             })
-        return iot_data
+        return result
 
     def update_all_flow_speed_congestion_in_5min(self, time):
         if not isinstance(time, datetime):
