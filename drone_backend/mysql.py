@@ -15,7 +15,7 @@ class MysqlProcessor:
         if Drone.objects.filter(id=device_info['id']).exists():
             return False
         else:
-            device_mysql = Drone(id=device_info['id'], latitude=device_info['latitude'], longitude=device_info['longitude'], altitude=device_info['altitude'], time=device_info['timestamp'], dist_id=device_info['district'], video_url=device_info['video_url'])
+            device_mysql = Drone(id=device_info['id'], latitude=device_info['latitude'], longitude=device_info['longitude'], altitude=device_info['altitude'],timestamp=device_info['time'], dist_id=device_info['dist_id'], video_url=device_info['video_url'])
             device_mysql.save()
             return True
 
