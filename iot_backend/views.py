@@ -38,18 +38,18 @@ def add_device(request):
         return Response({"error": "Device not found"}, status=404)
     # return Response(deviceInfo, status=200)
     if mysql.add_device(deviceInfo):
-        return Response('Device added', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device already exists', status=status.HTTP_409_CONFLICT)
+        return Response(False, status=status.HTTP_409_CONFLICT)
     
 @api_view(['DELETE'])
 def delete_device(request):
     id = request.query_params.get('id')
     db = MysqlProcessor()
     if db.delete_device(id):
-        return Response('Device deleted', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        return Response(False, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['POST', 'GET'])
 def disable_device(request):
@@ -57,9 +57,9 @@ def disable_device(request):
     id = data.get('id')
     db = MysqlProcessor()
     if db.disable_or_enable_device(id):
-        return Response('Status switched', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        return Response(False, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def get_searched_devices(request):

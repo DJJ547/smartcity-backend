@@ -37,9 +37,9 @@ def addDevice(request):
     mongodb = MongoDBProcessor()
     deviceInfo = mongodb.get_camera_info(request_id)
     if db.add_device(deviceInfo):
-        return Response('Device added', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device already exists', status=status.HTTP_409_CONFLICT)
+        return Response(False, status=status.HTTP_409_CONFLICT)
 
 
 @api_view(['GET'])
@@ -56,9 +56,9 @@ def deleteDevice(request):
     request_id = request.query_params.get('id')
     # delete device info
     if db.delete_device(request_id):
-        return Response('Device deleted', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        return Response(False, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST', 'GET'])
@@ -66,9 +66,9 @@ def disableDevice(request):
     request_id = request.query_params.get('id')
     # disable device
     if db.disable_or_enable_device(request_id):
-        return Response('Status switched', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        return Response(False, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

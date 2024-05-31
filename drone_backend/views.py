@@ -30,11 +30,10 @@ def addDevice(request):
     # add device info
     mongodb = MongoDBProcessor()
     deviceInfo = mongodb.get_drone_info(request_id)
-    print("hi", deviceInfo)
     if db.add_device(deviceInfo):
-        return Response('Device added', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device already exists', status=status.HTTP_409_CONFLICT)
+        return Response(False, status=status.HTTP_409_CONFLICT)
 
 @api_view(['GET'])
 def GetALLDevices(request):
@@ -48,17 +47,17 @@ def GetALLDevices(request):
 def deleteDevice(request):
     request_id = request.query_params.get('id')
     if db.delete_device(request_id):
-        return Response('Device deleted', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        return Response(False, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST', 'GET'])
 def disableDevice(request):
     request_id = request.query_params.get('id')
     if db.disable_or_enable_device(request_id):
-        return Response('Status switched', status=status.HTTP_200_OK)
+        return Response(True, status=status.HTTP_200_OK)
     else:
-        return Response('Device not found', status=status.HTTP_404_NOT_FOUND)
+        return Response(False, status=status.HTTP_404_NOT_FOUND)
         
 @api_view(['GET'])
 def searchedDevice(request):
@@ -66,6 +65,7 @@ def searchedDevice(request):
     # search device
     mongodb = MongoDBProcessor()
     result = mongodb.search_device(search_term)
+    print(result)
     return Response(result, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -80,7 +80,7 @@ def streamVideo(request):
     id = request.query_params.get('id')
     print("Received id for stream video:", id)
     mongodb = MongoDBProcessor()
-    deviceInfo = mongodb.get_drone_info(id)
+    deviceInfo = mongodb.get_drone_info(int(id))
     """ device_data = {
         'id': id,
         'videourl' : deviceInfo['video_url'],
