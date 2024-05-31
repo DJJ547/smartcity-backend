@@ -6,6 +6,7 @@ urlpatterns = [
     path('addDevice/', views.add_device),
     path('deleteDevice/', views.delete_device),
     path('searchedDevice/', views.get_searched_devices),
+    path('disableDevice/', views.disable_device),
     
     path('getAllDevices/', views.get_all_devices_data),
     path('getAllCongestions/' ,views.get_all_congestions_data),

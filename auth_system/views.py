@@ -18,7 +18,7 @@ def login(request):
             'email': res['user'].email,
             'firstname': res['user'].first_name,
             'lastname': res['user'].last_name,
-            'is_agent':res['user'].is_staff,
+            'is_staff': res['user'].is_staff,
             'token': res['token']
         }, status=status.HTTP_200_OK)
     else:
