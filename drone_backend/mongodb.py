@@ -23,9 +23,10 @@ class MongoDBProcessor:
         district = drone_info['dist_id']
         latitude = drone_info['latitude']
         longitude = drone_info['longitude']
+        altitude = drone_info['altitude']
         video_url = drone_info['video_url']
         time = str(timezone.now())
-        return {'id': id,'district': district, 'latitude': latitude, 'longitude': longitude, 'time': time, 'video_url': video_url}
+        return {'id': id,'district': district, 'latitude': latitude, 'longitude': longitude, 'altitude':altitude,'time': time, 'video_url': video_url}
     
     # search by index or address
     def search_device(self, search_term):
