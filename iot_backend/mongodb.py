@@ -27,10 +27,13 @@ class MongoDBProcessor:
             return None
         return {
             'id': iot['id'],
-            'address': str(iot['freeway']) + " " + iot['direction'] + " " + str(iot['city']) + str(iot['county']),
+            'freeway': iot['freeway'],
+            'direction': iot['direction'],
+            'city': iot['city'],
+            'county': iot['county'],
             'latitude': iot['latitude'],
             'longitude': iot['longitude'],
-            'dist_id': iot['district'],
+            'district': iot['district'],
         }
 
     # Search by station_id or freeway or district

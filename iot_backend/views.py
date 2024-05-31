@@ -44,8 +44,7 @@ def add_device(request):
     
 @api_view(['DELETE'])
 def delete_device(request):
-    data = json.loads(request.body)
-    id = data.get('id')
+    id = request.query_params.get('id')
     db = MysqlProcessor()
     if db.delete_device(id):
         return Response('Device deleted', status=status.HTTP_200_OK)
