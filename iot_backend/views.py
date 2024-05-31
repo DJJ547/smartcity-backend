@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 import json
 from datetime import datetime
+import pandas as pd
 import pytz
 
 from .mysql import MysqlProcessor
 from .mongodb import MongoDBProcessor
+from smartcity_backend.iotAI import predict_average
 
 @api_view(['GET'])
 def get_all_devices_data(request):
@@ -76,11 +78,14 @@ def get_all_congestions_data(request):
 
 @api_view(['POST'])
 def get_flow_speed_for_one_device(request):
+    predict_avg = []
     data = json.loads(request.body)
     station_id = data.get('id')
     mysql = MysqlProcessor()
-    all_flow_speed = mysql.get_all_speed_flow_of_one_device(station_id)
-    return Response({'station_data': all_flow_speed}, status=status.HTTP_200_OK)
+    data = mysql.get_all_speed_flow_of_one_device(station_id)
+    if station_id is not None:
+        predict_avg = predict_average(data["predict"])
+    return Response({'station_data': data["all"], 'predicted_average': predict_avg}, status=status.HTTP_200_OK)
     
 
 @api_view(['POST'])

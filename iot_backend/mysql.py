@@ -129,6 +129,7 @@ class MysqlProcessor:
 
     def get_all_speed_flow_of_one_device(self, id):
         all_data = []
+        predict_input = []
         if Station_Speed.objects.filter(station_id=id).exists():
             all_speed_flow = Station_Speed.objects.filter(station_id=id).order_by("timestamp")
             for speed_flow in all_speed_flow:
@@ -140,4 +141,6 @@ class MysqlProcessor:
                     'station_id': speed_flow.station_id
                 }
                 all_data.append(data)
-        return all_data
+                arr = [speed_flow.speed, speed_flow.flow]
+                predict_input.append(arr)
+        return {"all": all_data, "predict": predict_input}
