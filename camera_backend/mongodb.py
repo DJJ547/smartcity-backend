@@ -26,6 +26,7 @@ class MongoDBProcessor:
         longitude = camera_info['longitude']
         image_url = camera_info['currentImageURL']
         video_url = camera_info['streamingVideoURL'] if 'streamingVideoURL' in camera_info else ''
+        
         time = str(timezone.now())
         return {'id': id, 'index': index, 'district': district, 'address': address, 'latitude': latitude, 'longitude': longitude, 'image_url': image_url, 'time': time, 'video_url': video_url}
     

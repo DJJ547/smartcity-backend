@@ -9,7 +9,7 @@ class Camera(models.Model):
     image_url = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
     district = models.IntegerField()
-    enabled = models.SmallIntegerField()
+    enabled = models.BooleanField(default=True)
     video_url = models.CharField(max_length=500)
 
     class Meta:
@@ -24,7 +24,7 @@ class Iot(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=False)
     district = models.IntegerField(null=False)
-    enabled = models.SmallIntegerField()
+    enabled = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'iots'
@@ -37,7 +37,7 @@ class Drone(models.Model):
     district = models.IntegerField(null=False)
     timestamp = models.DateTimeField()
     video_url = models.CharField(max_length=500)
-    enabled = models.SmallIntegerField(null=False)
+    enabled = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'drones'
