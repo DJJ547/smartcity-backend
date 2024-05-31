@@ -22,6 +22,7 @@ def addDevice(request):
     mongodb = MongoDBProcessor()
     mysql = MysqlProcessor()
     deviceInfo = mongodb.get_drone_info(request_id)
+    print("hi", deviceInfo)
     if mysql.add_device(deviceInfo):
         return Response('Device added', status=status.HTTP_200_OK)
     else:

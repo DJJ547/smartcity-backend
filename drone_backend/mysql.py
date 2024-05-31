@@ -15,7 +15,7 @@ class MysqlProcessor:
         if Drone.objects.filter(id=device_info['id']).exists():
             return False
         else:
-            device_mysql = Drone(id=device_info['id'], latitude=device_info['latitude'], longitude=device_info['longitude'], time=device_info['timestamp'], district=device_info['district'], video_url=device_info['video_url'])
+            device_mysql = Drone(id=device_info['id'], latitude=device_info['latitude'], longitude=device_info['longitude'], altitude=device_info['altitude'],timestamp=device_info['time'], dist_id=device_info['dist_id'], video_url=device_info['video_url'])
             device_mysql.save()
             return True
 
@@ -46,11 +46,11 @@ class MysqlProcessor:
                 'latitude': device.latitude,
                 'longitude': device.longitude,
                 'time': str(device.timestamp),
-                'dist_id': device.district,
+                'dist_id': device.dist_id,
                 'status': 'active' if device.enabled else 'inactive',
                 'video_url': device.video_url
             }
-            device_info["drones"][str(device.district)].append(data)
+            device_info["drones"][str(device.dist_id)].append(data)
             device_info["drones"]["0"].append(data)
 
         return device_info
