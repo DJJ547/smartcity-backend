@@ -13,6 +13,7 @@ from queue import Queue
 import pytz
 from datetime import datetime
 
+cap = None
 streaming = True
 
 @api_view(['POST'])
@@ -83,6 +84,8 @@ def streamVideo(request):
     # get video stream
     # Open the video file
     BUFFER_SIZE = 30
+    global streaming, cap
+    streaming = True
     cap = cv2.VideoCapture(request_url)
     # The buffer for storing frames
     buffer = Queue(maxsize=BUFFER_SIZE)
@@ -130,6 +133,8 @@ def streamVideo(request):
 
 @api_view(['GET'])
 def stopStream(request):
-    global streaming
+    global streaming, cap
     streaming = False
+    if cap:
+        cap.release()
     return Response('Stream stopped', status=status.HTTP_200_OK)
