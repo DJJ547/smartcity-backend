@@ -5,13 +5,13 @@ from urllib.parse import quote_plus
 import os
 load_dotenv()
 mongodbpassword = quote_plus(os.getenv('mongodbpassword'))
-mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:27017/"
+mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:{os.getenv('mongodbport')}/"
 class MongoDBProcessor:
     def __init__(self):
         #mongoDB connection
         self.client = MongoClient(mongodb_uri)
         self.db = self.client[os.getenv('mongodb_name')]
-        self.camera_collection = self.db['Camera']
+        self.camera_collection = self.db['cameras']
 
     # get device info   
     def get_camera_info(self, id):

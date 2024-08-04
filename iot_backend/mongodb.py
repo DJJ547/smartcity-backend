@@ -11,14 +11,15 @@ import pytz
 from django.conf import settings
 load_dotenv()
 mongodbpassword = quote_plus(os.getenv('mongodbpassword'))
-mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:27017/"
+mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:{os.getenv('mongodbport')}/"
+
 
 class MongoDBProcessor:
     def __init__(self):
         # mongoDB connection
         self.client = MongoClient(mongodb_uri)
         self.db = self.client[str(os.getenv('mongodb_name'))]
-        self.iot_collection = self.db['iots_all']
+        self.iot_collection = self.db['iots']
 
     # get device info
     def get_iot_info(self, station_id):
@@ -45,10 +46,12 @@ class MongoDBProcessor:
         except ValueError:
             numeric_search = None
 
-        search_conditions = [{"id": numeric_search}, {"district": numeric_search}, {"freeway": numeric_search}]
+        search_conditions = [{"id": numeric_search}, {
+            "district": numeric_search}, {"freeway": numeric_search}]
 
-        iot_info = self.iot_collection.find({"$or": search_conditions}).limit(100)
- 
+        iot_info = self.iot_collection.find(
+            {"$or": search_conditions}).limit(100)
+
         for iot in iot_info:
             station_id = iot['id']
             address = str(iot['freeway']) + ' ' + str(iot['direction'])

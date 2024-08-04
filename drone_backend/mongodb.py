@@ -1,12 +1,12 @@
 from pymongo import MongoClient
-from django.utils import timezone
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
 import os
+from datetime import datetime, timedelta
 import pytz
 load_dotenv()
 mongodbpassword = quote_plus(os.getenv('mongodbpassword'))
-mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:27017/"
+mongodb_uri = f"mongodb://{os.getenv('mongodbusername')}:{mongodbpassword}@{os.getenv('mongodbhost')}:{os.getenv('mongodbport')}/"
 
 
 class MongoDBProcessor:
@@ -27,8 +27,7 @@ class MongoDBProcessor:
         longitude = drone_info['longitude']
         altitude = drone_info['altitude']
         video_url = drone_info['video_url']
-        print(video_url)
-        timestamp = timezone.now()
+        timestamp = pytz.utc.localize(datetime.strptime(drone_info['timestamp'], "%d/%m/%y %H:%M"))
         return {'id': id, 'dist_id': dist_id, 'latitude': latitude, 'longitude': longitude, 'altitude': altitude, 'time': timestamp, 'video_url': video_url}
 
     # search by index or address
