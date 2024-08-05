@@ -35,7 +35,7 @@ class MysqlProcessor:
                 'id': iot.station_id,
                 'latitude': iot.latitude,
                 'longitude': iot.longitude,
-                'address': iot.freeway + " " + iot.direction + "," + iot.city + "," + iot.county,
+                'address': iot.freeway if iot.freeway is not None else '/' + " " + iot.direction if iot.direction is not None else '/' + "," + iot.city if iot.city is not None else '/' + "," + iot.county if iot.county is not None else '/',
                 'dist_id': iot.district,
                 'status': 'active' if iot.enabled else 'inactive',
                 'type': 'iot'

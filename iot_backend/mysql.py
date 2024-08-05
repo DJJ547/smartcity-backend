@@ -22,7 +22,7 @@ class MysqlProcessor:
                 latitude=device_info['latitude'],
                 longitude=device_info['longitude'],
                 district=device_info['district'],
-                enabled = 1
+                enabled=1
             )
             device_mysql.save()
             return True
@@ -78,7 +78,7 @@ class MysqlProcessor:
                 'id': device.station_id,
                 'latitude': device.latitude,
                 'longitude': device.longitude,
-                'address': device.freeway + " " + device.direction + "," + device.city + "," + device.county,
+                'address': device.freeway if device.freeway is not None else '/' + " " + device.direction if device.direction is not None else '/' + "," + device.city if device.city is not None else '/' + "," + device.county if device.county is not None else '/',
                 'dist_id': device.district,
                 'status': 'active' if device.enabled else 'inactive',
                 'type': 'iot'
@@ -117,7 +117,8 @@ class MysqlProcessor:
         all_data = []
         predict_input = []
         if Station_Speed.objects.filter(station_id=id).exists():
-            all_speed_flow = Station_Speed.objects.filter(station_id=id).order_by("timestamp")
+            all_speed_flow = Station_Speed.objects.filter(
+                station_id=id).order_by("timestamp")
             for speed_flow in all_speed_flow:
                 data = {
                     'id': speed_flow.id,
