@@ -82,7 +82,7 @@ def streamVideo(request):
     id = request.query_params.get('id')
     print("Received id for stream video:", id)
     mongodb = MongoDBProcessor()
-    deviceInfo = mongodb.get_drone_info(int(id))
+    deviceInfo = mongodb.get_drone_info(id)
     """ device_data = {
         'id': id,
         'videourl' : deviceInfo['video_url'],
